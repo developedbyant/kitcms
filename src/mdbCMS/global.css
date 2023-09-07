@@ -1,0 +1,106 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap");
+*{
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+.app{
+    /* app */
+    --appBg:#dfdfdf;
+    --antiAppBg:#F9FAFB;
+    --blurBg: #ebebeb7d;
+    --headerColor:#5a5a5a;
+    --textColor:#6B7280;
+    --borderColor:#eeeeee;
+    --iconColor: #0000008c;
+    --maxWidth:1200px;
+    --shadow:rgba(0,0,0,5%);
+    --mainColor:#3c88c3;
+    --secondColor:#3c88c3d6;
+    --errorBg: #cc7d7d;
+    --errorColor: #fff;
+    /* search */
+    --searchBg:#fff;
+    --searchColor:#b3b3b3;
+    /* nav */
+    --navBg:#ebebeb7d;
+    --navLinkHoverBg:#f2f2f2; 
+    --navLinkColor:#737373;
+    --navLinkHoverColor:#737373;
+    /* card */
+    --cardBg:#ebebeb7d;
+    --cardColor:#828282;
+    /* data label */
+    --dataLabelBg:#383838;
+    --dataLabelColor:#cfcfcf;
+    /* button */
+    --buttonBg: #3c88c3;
+    --buttonBg2: #3c88c3d6;
+    --buttonColor:#fff;
+    --buttonColor2:#fff;
+}
+/* dark mode */
+.app.dark{
+    /* card */
+    --cardBg:#2e3239;
+    --cardColor:#c4c4c4;
+    /* app */
+    --blurBg: #0000002e;
+    --headerColor: #ffffff;
+    --textColor: #a9a9a9;
+    --shadow: rgba(0,0,0,.1);
+    --iconColor: #c2c2c2;
+    --borderColor:#3939394a;
+    --appBg: #23272F;
+    --antiAppBg: #2e323a;
+    /* nav */
+    --navBg: #2e323a;
+    --navLinkColor:#ebebeb;
+    --navLinkHoverBg:#b3b3b329;
+    /* search */
+    --searchBg:#46494f38;
+}
+
+/* label data */
+[data-label]{
+    position: relative;
+}
+[data-label]:hover::before{
+    content: attr(data-label);
+    width: max-content;
+    position: absolute;
+    top: 0; left: 0;
+    z-index: 10;
+    background-color: var(--dataLabelBg);
+    color: var(--dataLabelColor);
+    font-size: 12px;
+    font-weight: 400;
+    border-radius: 5px;
+    padding: 7px 13px;
+    top: calc(100% + 10px);
+    left: 50%; transform: translateX(-50%);
+}
+[data-label-tr]:hover::before,[data-label-tl]:hover::before,[data-label-br]:hover::before,[data-label-bl]:hover::before{
+    transform: none;
+}
+[data-label-tr]:hover::before{
+    top: calc(-100% - 15px);
+    left: calc(100% + 5px);
+}
+[data-label-tl]:hover::before{
+    top: calc(-100% - 15px);
+    right: calc(100% + 5px);
+    left: auto;
+}
+[data-label-bl]:hover::before{
+    top: calc(100% + 5px);
+    right: calc(100% + 5px);
+    left: auto;
+}
+[data-label-br]:hover::before{
+    top: calc(100% + 5px);
+    right: auto;
+    left: calc(100% + 5px);
+}
