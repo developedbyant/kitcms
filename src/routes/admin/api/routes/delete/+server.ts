@@ -25,6 +25,8 @@ export const POST: RequestHandler = async (event) => {
     // delete route
     const routeDeletedRes = await appCol.deleteOne(filter)
     if(routeDeletedRes.acknowledged){
+        // delete route collection
+        db.collection(routeID).drop()
         // create fetcher and types
         if(dev) utils.gen(event.locals.svelteCMS.routes)
         // return response

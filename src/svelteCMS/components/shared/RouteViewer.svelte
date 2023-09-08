@@ -3,6 +3,7 @@
     /** if we adding new route or not */
     export let isNewRoute:boolean = true
     import utils from "svelteCMS/lib/utils";
+    import { goto } from "$app/navigation";
     import { createToast } from "svelteCMS/components/toasts/store";
     import PageTitle from "svelteCMS/components/shared/PageTitle.svelte";
     import Content from "svelteCMS/components/layout/Content.svelte";
@@ -22,6 +23,7 @@
     let checkInputErrors = false
     $: errorOnKeys = {
         id:checkInputErrors && routeData.id.trim()==="",
+        singularID:checkInputErrors && routeData.singularID.trim()==="",
         title:checkInputErrors && routeData.title.trim()==="",
         description:checkInputErrors && routeData.description.trim()==="",
         searchAbleKeys:checkInputErrors && routeData.searchAbleKeys.length===0,
@@ -43,14 +45,12 @@
         if(isNewRoute){
             const apiLoad:ApiRouteCreate['input'] = routeData
             const apiResponse:ApiRouteCreate['output'] = await utils.apiRequest("/admin/api/routes/create",apiLoad)
-            // wait 5 milliseconds to show toast
-            await utils.wait(500)
             createToast({ type:apiResponse.error?"error":"successful",msg:apiResponse.message })
             // if route was create go to home page
             if(!apiResponse.error){
-                // wait 2 seconds to navagate to admin home page
-                await utils.wait(1000)
-                location.href = "/admin/routes"
+                // wait 5 milliseconds to show toast
+                await utils.wait(500)
+                goto("/admin/routes",{ replaceState:true })
             }
         }
         // update route
@@ -68,10 +68,22 @@
 <Content>
     <LeftContent>
         <PageTitle title={isNewRoute?"Create route":"Update route"} showGoBack link={{ text:"View routes",href:"/admin/routes"}}/>
-        <Label text="Route information"/>
         <!-- Only show route id when adding new route, not editing it -->
         {#if isNewRoute}
-            <Input bind:value={routeData.id} placeholder="Route id..." error={errorOnKeys.id}/>
+            <div class="flex">
+                <div class="flex c">
+                    <Label text="Plural id">
+                        <QuestionMark text="Plural id example for posts for a list of posts"/>
+                    </Label>
+                    <Input bind:value={routeData.id} placeholder="Route id..." error={errorOnKeys.id}/>
+                </div>
+                <div class="flex c">
+                    <Label text="Singular id">
+                        <QuestionMark text="Singular id example for posts it will be post"/>
+                    </Label>
+                    <Input bind:value={routeData.singularID} placeholder="Singular route id..." error={errorOnKeys.singularID}/>
+                </div>
+            </div>
         {/if}
         <Input bind:value={routeData.title} placeholder="Route title..." error={errorOnKeys.title}/>
         <TextArea bind:value={routeData.description} placeholder="Route description..." error={errorOnKeys.description}/>
@@ -86,3 +98,16 @@
         <Button text={isNewRoute?"Create":"Update"} on:click={submit} loading={submitting}/>
     </LeftContent>
 </Content>
+
+<style>
+    .flex{
+        flex: 1;
+        display: flex;
+        /* align-items: center; */
+        gap: 10px;
+        justify-content: space-between;
+    }
+    .flex.c{
+        flex-direction: column;
+    }
+</style>

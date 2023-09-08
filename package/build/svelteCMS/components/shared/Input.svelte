@@ -17,6 +17,7 @@
 
 <style>
     .wrapper{
+        flex: 1;
         background-color: var(--antiAppBg);
         display: flex;
         align-items: center;

@@ -6,8 +6,8 @@
     import { createToast } from "svelteCMS/components/toasts/store";
     import type { ApiUserLogin } from "svelteCMS/types";
     let loading:boolean = false
-    let email:string = "admin@sveltecms.dev"
-    let password:string = "admin123"
+    let email:string = ""
+    let password:string = ""
 
     /** Login */
     async function login() {

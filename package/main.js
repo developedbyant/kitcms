@@ -12,12 +12,33 @@ const paths = {
     // project:`${CWD}/test/src`,
 }
 
+/** handle project layout */
+function handleLayout(){
+    const projectLayoutPath = `${paths.project}/+layout.svelte`
+    const projectLayoutExists = fs.existsSync(projectLayoutPath)
+    // if project layout file does not exists, create one
+    if(!projectLayoutExists){
+        fs.writeFileSync(projectLayoutPath,defaults.layout)
+        fs.writeFileSync(`${paths.project}/ProjectLayout.svelte`,"<slot />")
+        utils.log.normal("added src/routes/+layout.svelte")
+        utils.log.normal("added src/routes/ProjectLayout.svelte where you can add you project layout")
+    }else{
+        fs.writeFileSync(projectLayoutPath,defaults.layout)
+        fs.writeFileSync(`${paths.project}/ProjectLayout.svelte`,fs.readFileSync(projectLayoutPath).toString())
+        utils.log.normal("added src/routes/+layout.svelte")
+        utils.log.normal("added src/routes/ProjectLayout.svelte where you can add you project layout")
+    }
+}
+
 /** Handle project hooks */
 function handleHooks(){
     const projectHooksPath = `${paths.project}/hooks.server.ts`
     const projectHooksExists = fs.existsSync(projectHooksPath)
     // if project hooks file does not exists, copy cms hooks file to src/hooks.server.ts
-    if(!projectHooksExists) fs.writeFileSync(projectHooksPath,defaults.hooksFileCms)
+    if(!projectHooksExists){
+        fs.writeFileSync(projectHooksPath,defaults.hooksFileCms)
+        utils.log.normal("created src/hooks.server.ts")
+    }
     // else if cms hooks not in hooks file make new file for project hooks and import that file hooks to src/hooks.server.ts together with cms hooks
     else if(!fs.readFileSync(projectHooksPath).toString().includes("svelteCMSHooks")){
         const projectHooksData = fs.readFileSync(projectHooksPath).toString()
@@ -25,6 +46,8 @@ function handleHooks(){
         // create hooks files
         fs.writeFileSync(appHooksPath,projectHooksData)
         fs.writeFileSync(projectHooksPath,defaults.hooksFile)
+        utils.log.normal("updated src/hooks.server.ts")
+        utils.log.normal("created src/projectHooks.server.ts where you can add you project hooks")
     }
 }
 
@@ -96,9 +119,10 @@ if(folderDelConfirm && !updating){
 
     // handle dependencies
     handleDependencies()
-
     // handle hooks
     handleHooks()
+    // handle layout
+    handleLayout()
 
     // add data to .env file or create if not there
     if(!fs.existsSync(`${CWD}/.env`)) fs.writeFileSync(`${CWD}/.env`,`DATABASE_URL="${config.dbUrl}"\nDATABASE_NAME="${config.dbName}"`)

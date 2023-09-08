@@ -62,6 +62,7 @@ export type UserSessionLoad = Omit<UserSessionData,"_id">
 /** Route data */
 export type RouteData = {
     id:string
+    singularID:string
     title:string
     description:string
     // Keys to use when searching for objects

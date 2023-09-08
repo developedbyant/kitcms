@@ -16,7 +16,7 @@ export default new class Utils {
         const types:string[] = []
         for(const route of routes){
             // add to fetch class
-            fetcherClass+=this.fetchMethodTemplate(route.id,this.capitalize(route.id)+"Data")
+            fetcherClass+=this.fetchMethodTemplate(route.id,route.singularID,this.capitalize(route.id)+"Data")
             // start current route type data
             let typeData:string = `type ${this.capitalize(route.id)+"Data"} = {`
             // loop all blocks in current route
@@ -53,9 +53,9 @@ export default new class Utils {
     private capitalize = (data:string)=> data.charAt(0).toUpperCase()+data.slice(1)
 
     /** template for fetcher methods */
-    private fetchMethodTemplate = (routeID:string,typeName:string)=>`\n    async ${routeID.slice(0,routeID.length-1)}<K extends keyof ${typeName}>(filter:Filter<${typeName}>,select:{[P in K]:true|{[key:string]:any}}){
+    private fetchMethodTemplate = (routeID:string,singularID:string,typeName:string)=>`\n    async ${singularID}<K extends keyof ${typeName}>(filter:Filter<${typeName}>,select:{[P in K]:true|{[key:string]:any}}){
             const object = await db.collection("${routeID}").findOne(filter,{ projection:select }) as any ;
-            object['_id']=object['_id'].toString()
+            if(object) object['_id']=object['_id'].toString()
             const response = object as Pick<${typeName}, K> & { _id:string }
             return response
         }

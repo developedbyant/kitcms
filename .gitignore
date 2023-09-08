@@ -10,3 +10,5 @@ vite.config.ts.timestamp-*
 test*
 .npmrc
 package-lock.json
+src/svelteCMS/lib/fetcher.server.ts
+.vscode
