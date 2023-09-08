@@ -4,10 +4,10 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			mdbCMS:import("mdbCMS/types/locals").Locals
+			svelteCMS:import("svelteCMS/types/locals").Locals
 		}
 		interface PageData {
-			mdbCMS:import("mdbCMS/types/locals").PageData
+			svelteCMS:import("svelteCMS/types/locals").PageData
 		}
 		// interface Platform {}
 	}

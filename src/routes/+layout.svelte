@@ -1,5 +1,5 @@
 <script lang="ts">
-    import"mdbCMS/global.css"
+    import"svelteCMS/global.css"
 </script>
 
 <div class="app dark">
