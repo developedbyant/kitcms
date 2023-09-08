@@ -25,6 +25,8 @@ export const handle:Handle = sequence(svelteCMSHooks)`,
 {#if $page.url.pathname.startsWith("/admin")}
     <slot />
 {:else}
-    <ProjectLayout />
+    <ProjectLayout>
+        <slot/>
+    </ProjectLayout>
 {/if}`
 }

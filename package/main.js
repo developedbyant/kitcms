@@ -14,17 +14,17 @@ const paths = {
 
 /** handle project layout */
 function handleLayout(){
-    const projectLayoutPath = `${paths.project}/+layout.svelte`
+    const projectLayoutPath = `${paths.project}/routes/+layout.svelte`
     const projectLayoutExists = fs.existsSync(projectLayoutPath)
     // if project layout file does not exists, create one
     if(!projectLayoutExists){
         fs.writeFileSync(projectLayoutPath,defaults.layout)
-        fs.writeFileSync(`${paths.project}/ProjectLayout.svelte`,"<slot />")
+        fs.writeFileSync(`${paths.project}/routes/ProjectLayout.svelte`,"<slot />")
         utils.log.normal("added src/routes/+layout.svelte")
         utils.log.normal("added src/routes/ProjectLayout.svelte where you can add you project layout")
     }else{
         fs.writeFileSync(projectLayoutPath,defaults.layout)
-        fs.writeFileSync(`${paths.project}/ProjectLayout.svelte`,fs.readFileSync(projectLayoutPath).toString())
+        fs.writeFileSync(`${paths.project}/routes/ProjectLayout.svelte`,fs.readFileSync(projectLayoutPath).toString())
         utils.log.normal("added src/routes/+layout.svelte")
         utils.log.normal("added src/routes/ProjectLayout.svelte where you can add you project layout")
     }
@@ -86,7 +86,6 @@ if(folderDelConfirm && !updating){
     const dbName = (await inquirer.prompt({ type:"input",message:"Please provide mongodb database name:",name:"data"})).data
 
     // show thank u message
-    utils.log.ok("Thank you, almost there")
     config['dbUrl'] = dbUrl
     config['dbName'] = dbName
 
@@ -95,6 +94,14 @@ if(folderDelConfirm && !updating){
     if("error" in mongodb){
         utils.log.error(`Could not connect to mongodb connection :(\n    url:${config.dbUrl}\n    dbName:${config.dbName}\n    error:${mongodb.error}`)
         process.exit(1)
+    }
+
+    // ask to reset database
+    const dbExists = (await mongodb.db.admin().listDatabases()).databases.find(data=>data.name===config.dbName)
+    if(dbExists){
+        const resetDatabase = (await inquirer.prompt({ type:"confirm",message:`Looks like ${config.dbName} already exists, it may conflict with CMS would you like to reset it ?`,name:"data"})).data
+        if(resetDatabase) await mongodb.db.dropDatabase()
+        utils.log.ok(`Database:${config.dbName} was reset`)
     }
 
     // create default user
