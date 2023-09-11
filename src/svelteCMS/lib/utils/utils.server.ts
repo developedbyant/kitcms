@@ -45,7 +45,7 @@ export default new class Utils {
         }
         // close class tag
         fetcherClass+="\n}"
-        const fileData = `import db from "svelteCMS/lib/db.server";\n\ntype Config = { limit?:number,skip?:number }\n\ntype Filter<Data> = {[key in keyof Data]:any}|{}\n\n${types.join("\n")}\n\n${fetcherClass}`
+        const fileData = `import db from "svelteCMS/lib/db.server";\n\ntype Config<TYPE> = { limit?:number,skip?:number,sort?:{ key: (keyof TYPE), direction:"desc"|"asc" } }\n\ntype Filter<Data> = {[key in keyof Data]:any}|{}\n\n${types.join("\n")}\n\n${fetcherClass}`
         writeFileSync(`src/svelteCMS/lib/fetcher.server.ts`,fileData)
     }
 
@@ -59,10 +59,11 @@ export default new class Utils {
             const response = object as Pick<${typeName}, K> & { _id:string }
             return response
         }
-        async ${routeID}<K extends keyof ${typeName}>(filter:Filter<${typeName}>,select:{[P in K]:true|{[key:string]:any}},config?:Config){
+        async ${routeID}<K extends keyof ${typeName}>(filter:Filter<${typeName}>,select:{[P in K]:true|{[key:string]:any}},config?:Config<${typeName}>){
             type Response = Pick<${typeName}, K> & { _id:string }
-            const cursor = db.collection("tags").find(filter,{ projection:select }).map(((data:any)=>{ data['_id']=data['_id'].toString() ; return data}))
+            const cursor = db.collection("${routeID}").find(filter,{ projection:select }).map(((data:any)=>{ data['_id']=data['_id'].toString() ; return data}))
             if(config?.skip) cursor.skip(config.skip)
+            if(config?.sort) cursor.sort(config.sort.key,config.sort.direction)
             if(config?.limit) cursor.limit(config.limit)
             const response = await cursor.toArray() as Response[]
             return response

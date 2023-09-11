@@ -88,7 +88,7 @@ export type RouteBlockData = {
     }
 }
 /** Block types */
-export type RouteBlockTypes = "input" | "text" | "number" | "date" | "boolean" | "file" | "files" | "linkRoute" | "editor" | "slug"
+export type RouteBlockTypes = "input" | "text" | "number" | "date" | "boolean" | "file" | "files" | "linkRoute" | "editor" | "slug" | "stringList"
 
 export type ObjectData = { [key:string]:any }
 

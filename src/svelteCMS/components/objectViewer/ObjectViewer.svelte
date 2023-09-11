@@ -50,7 +50,7 @@
                 // wait 2 seconds to navagate to admin home page
                 await utils.wait(1000)
                 const objectID = apiResponse.data._id
-                goto(`/admin/routes/${routeID}/objects/update/${objectID}`)
+                goto(`/admin/routes/${routeID}/objects/create`,{ replaceState:true })
             }
         }
         // update object

@@ -14,6 +14,7 @@
     import SelectRouteObjects from "../shared/SelectRouteObjects.svelte";
     import type { AssetData, RouteBlockData } from "svelteCMS/types";
     import AssetsPreview from "../assetsPreview/AssetsPreview.svelte";
+    import InputChips from "../inputChips/InputChips.svelte";
     // if value is undefined is because it's a new block so add default value
     if(value===undefined) value = utils.getBlockDefaultValue(blockData)
 
@@ -36,7 +37,7 @@
         (["input","slug","text"].includes(blockData.type) && value.trim()==="") || (blockData.type==="number" && value==="") || !value
     )
 </script>
-{#if ["input","text","number","linkRoute","editor","slug","files"].includes(blockData.type)}
+{#if ["input","stringList","text","number","linkRoute","editor","slug","files"].includes(blockData.type)}
     {@const btnText = blockData.type==="slug"?"Generate" : blockData.type==="files" ? "Select" : ""}
     <Flex>
         <!-- display block label -->
@@ -58,6 +59,8 @@
             {/if}
         {:else if blockData.type==="text"}
             <TextArea bind:value placeholder={blockData.id} {error}/>
+        {:else if blockData.type==="stringList"}
+            <InputChips bind:values={value} />
         {:else if blockData.type==="slug"}
             <Input bind:value placeholder={blockData.id} {error}/>
         {:else if blockData.type==="number"}

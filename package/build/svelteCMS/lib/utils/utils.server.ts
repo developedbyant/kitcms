@@ -61,7 +61,7 @@ export default new class Utils {
         }
         async ${routeID}<K extends keyof ${typeName}>(filter:Filter<${typeName}>,select:{[P in K]:true|{[key:string]:any}},config?:Config){
             type Response = Pick<${typeName}, K> & { _id:string }
-            const cursor = db.collection("tags").find(filter,{ projection:select }).map(((data:any)=>{ data['_id']=data['_id'].toString() ; return data}))
+            const cursor = db.collection("${routeID}").find(filter,{ projection:select }).map(((data:any)=>{ data['_id']=data['_id'].toString() ; return data}))
             if(config?.skip) cursor.skip(config.skip)
             if(config?.limit) cursor.limit(config.limit)
             const response = await cursor.toArray() as Response[]
