@@ -22,7 +22,7 @@ export default new class Utils {
     getBlockDefaultValue(blockData:RouteBlockData){
         const blockType = blockData.type
         if(blockType==="input" || blockType==="text") return ""
-        else if(blockType==="stringList") return []
+        else if(blockType==="stringList" || blockType==="keyObjectList") return []
         else if(blockType==="number") return 1
         else if(blockType==="date") return new Date()
         else if(blockType==="boolean") return true

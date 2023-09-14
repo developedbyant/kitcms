@@ -13,6 +13,12 @@ type CategoriesData = {
     slug:string
     image:import("svelteCMS/types").AssetData
 }
+type ProductsData = {
+    title:string
+    slug:string
+    tags:TagsData[]
+    categories:CategoriesData[]
+}
 
 export default class Fetcher {
     async tag<K extends keyof TagsData>(filter:Filter<TagsData>,select:{[P in K]:true|{[key:string]:any}}){
@@ -39,6 +45,21 @@ export default class Fetcher {
         async categories<K extends keyof CategoriesData>(filter:Filter<CategoriesData>,select:{[P in K]:true|{[key:string]:any}},config?:Config<CategoriesData>){
             type Response = Pick<CategoriesData, K> & { _id:string }
             const cursor = db.collection("categories").find(filter,{ projection:select }).map(((data:any)=>{ data['_id']=data['_id'].toString() ; return data}))
+            if(config?.skip) cursor.skip(config.skip)
+            if(config?.sort) cursor.sort(config.sort.key,config.sort.direction)
+            if(config?.limit) cursor.limit(config.limit)
+            const response = await cursor.toArray() as Response[]
+            return response
+        }
+    async product<K extends keyof ProductsData>(filter:Filter<ProductsData>,select:{[P in K]:true|{[key:string]:any}}){
+            const object = await db.collection("products").findOne(filter,{ projection:select }) as any ;
+            if(object) object['_id']=object['_id'].toString()
+            const response = object as Pick<ProductsData, K> & { _id:string }
+            return response
+        }
+        async products<K extends keyof ProductsData>(filter:Filter<ProductsData>,select:{[P in K]:true|{[key:string]:any}},config?:Config<ProductsData>){
+            type Response = Pick<ProductsData, K> & { _id:string }
+            const cursor = db.collection("products").find(filter,{ projection:select }).map(((data:any)=>{ data['_id']=data['_id'].toString() ; return data}))
             if(config?.skip) cursor.skip(config.skip)
             if(config?.sort) cursor.sort(config.sort.key,config.sort.direction)
             if(config?.limit) cursor.limit(config.limit)

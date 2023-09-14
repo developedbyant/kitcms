@@ -12,6 +12,7 @@
     import Editor from "svelteCMS/components/editor/Editor.svelte";
     import FileSelector from "svelteCMS/components/shared/FileSelector.svelte";
     import SelectRouteObjects from "../shared/SelectRouteObjects.svelte";
+    import KeyObjectList from "./keyObjectList/KeyObjectList.svelte";
     import type { AssetData, RouteBlockData } from "svelteCMS/types";
     import AssetsPreview from "../assetsPreview/AssetsPreview.svelte";
     import InputChips from "../inputChips/InputChips.svelte";
@@ -21,6 +22,7 @@
     const dispatch = createEventDispatcher()
     /** If asset selector is open or not */
     let isFileSelectorOpen:boolean = false
+    let addingKeyObject:boolean = false
 
     /** handle asset selected and add to list of asset (value) if not exits*/
     function handleFileSelected(e:any){
@@ -37,7 +39,8 @@
         (["input","slug","text"].includes(blockData.type) && value.trim()==="") || (blockData.type==="number" && value==="") || !value
     )
 </script>
-{#if ["input","stringList","text","number","linkRoute","editor","slug","files"].includes(blockData.type)}
+
+{#if ["input","stringList","keyObjectList","text","number","linkRoute","editor","slug","files"].includes(blockData.type)}
     {@const btnText = blockData.type==="slug"?"Generate" : blockData.type==="files" ? "Select" : ""}
     <Flex>
         <!-- display block label -->
@@ -45,6 +48,8 @@
             <Label text={blockData.id} margin="0 0 0 0" rounded btn={{ href:`/admin/routes/${blockData.link?.toRoute}/objects/create`,text:`Create ${blockData.link?.toRoute}`,newTab:true}}/>
         {:else if blockData.type==="files"}
             <Label text={blockData.id} margin="0 0 0 0" rounded btn={btnText} on:click={()=>isFileSelectorOpen=true}/>
+        {:else if blockData.type==="keyObjectList"}
+            <Label text={blockData.id} margin="0 0 0 0" rounded btn={addingKeyObject?"Closed":"Add key object"} on:click={()=>addingKeyObject=!addingKeyObject}/>
         {:else}
             <Label text={blockData.id} margin="0 0 0 0" rounded btn={btnText} on:click={()=>dispatch("genSlug",blockData)}/>
         {/if}
@@ -71,6 +76,8 @@
             <SelectRouteObjects oneToMany={true} bind:value {blockData}/>
         {:else if blockData.type==="linkRoute" && !blockData.link?.oneToMany}
             <SelectRouteObjects oneToMany={false} bind:value {blockData}/>
+        {:else if blockData.type==="keyObjectList"}
+            <KeyObjectList bind:value bind:addingKeyObject/>
         {/if}
     </Flex>
 {/if}

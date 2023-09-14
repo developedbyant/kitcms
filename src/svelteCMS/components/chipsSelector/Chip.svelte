@@ -15,7 +15,7 @@
         all: unset;
         text-align: center;
         flex-grow: 1;
-        width: calc(100% / 6 - 29px);
+        /* width: calc(100% / 6 - 29px); */
         cursor: pointer;
         padding: 5px 10px;
         border-radius: 4px;
