@@ -12,3 +12,4 @@ test*
 package-lock.json
 src/svelteCMS/lib/fetcher.server.ts
 .vscode
+src/svelteCMS/types/generated.ts 

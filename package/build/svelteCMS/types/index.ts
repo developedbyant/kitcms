@@ -86,9 +86,12 @@ export type RouteBlockData = {
         /** Indicate if this is a one to many relation */
         oneToMany:boolean
     }
+    /** data for when using ObjectList, it help use generate types and other */
+    objectKeys?:ObjectListItemData
 }
+export type ObjectListItemData = {[key:string]: "string" | "number" | "boolean" | "date" }
 /** Block types */
-export type RouteBlockTypes = "input" | "text" | "number" | "date" | "boolean" | "file" | "files" | "linkRoute" | "editor" | "slug" | "stringList" | "keyObjectList"
+export type RouteBlockTypes = "input" | "text" | "number" | "date" | "boolean" | "file" | "files" | "linkRoute" | "editor" | "slug" | "stringList" | "keyObjectList" | "objectList"
 
 export type ObjectData = { [key:string]:any }
 

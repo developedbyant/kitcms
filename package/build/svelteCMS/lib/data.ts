@@ -2,7 +2,7 @@ import type { RouteBlockTypes,AppCollectionNames,AssetProvidersNames,AssetProvid
 
 /** List of all icons for block types */
 export const blockTypeIcons:{[key:string]:any} = {
-    input:"🔍",text:"📝",stringList:"📋",number:"🔢",date:"📅",boolean:"✅",json:"📋",file:"📄",files:"📂",linkRoute:"🔗",editor:"📝",slug:"🌎",keyObjectList:"📋"
+    input:"🔍",text:"📝",stringList:"📋",number:"🔢",date:"📅",boolean:"✅",json:"📋",file:"📄",files:"📂",linkRoute:"🔗",editor:"📝",slug:"🌎",keyObjectList:"📋",objectList:"📋"
 }
 
 type ColNames = AppCollectionNames | "create" | "update" | "objects"
@@ -10,7 +10,7 @@ type ColNames = AppCollectionNames | "create" | "update" | "objects"
 export const appCollectionNames:ColNames[] = [ "_App","_Assets","_Sessions","create","update","objects" ]
 
 /** List of all block types */
-export const blockTypes:RouteBlockTypes[] = ["input","slug","text","number","date","boolean","stringList","keyObjectList","file","files","linkRoute","editor"]
+export const blockTypes:RouteBlockTypes[] = ["input","slug","text","number","date","boolean","stringList","objectList","keyObjectList","file","files","linkRoute","editor"]
 
 /** List of asset providers */
 export const assetProvidersNames:AssetProvidersNames[] = [ "cloudinary","test" ]

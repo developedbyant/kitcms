@@ -12,10 +12,12 @@
     import Editor from "svelteCMS/components/editor/Editor.svelte";
     import FileSelector from "svelteCMS/components/shared/FileSelector.svelte";
     import SelectRouteObjects from "../shared/SelectRouteObjects.svelte";
-    import KeyObjectList from "./keyObjectList/KeyObjectList.svelte";
-    import type { AssetData, RouteBlockData } from "svelteCMS/types";
+    import KeyObjectList from "../keyObjectList/KeyObjectList.svelte";
+    import type { AssetData, RouteBlockData,ObjectListItemData } from "svelteCMS/types";
     import AssetsPreview from "../assetsPreview/AssetsPreview.svelte";
     import InputChips from "../inputChips/InputChips.svelte";
+    import ObjectListItems from "../objectListItems/ObjectListItems.svelte";
+    import NewObjectListItem from "../objectListItems/NewObjectListItem.svelte";
     // if value is undefined is because it's a new block so add default value
     if(value===undefined) value = utils.getBlockDefaultValue(blockData)
 
@@ -33,6 +35,17 @@
             value = [...value,assetData]
         }
     }
+
+    function addObjectListItem(e:any){
+        const objectData = e.detail as ObjectListItemData
+        value = [...value,objectData]
+        addingKeyObject = false
+    }
+
+    function rmObjectListItem(e:any){
+        const objectData = e.detail as ObjectListItemData
+        value = [...value.filter((data:any)=>data!==objectData)]
+    }
     
     /** show inputs error */
     $: error = checkInputErrors && (
@@ -40,7 +53,7 @@
     )
 </script>
 
-{#if ["input","stringList","keyObjectList","text","number","linkRoute","editor","slug","files"].includes(blockData.type)}
+{#if ["input","stringList","keyObjectList","objectList","text","number","linkRoute","editor","slug","files"].includes(blockData.type)}
     {@const btnText = blockData.type==="slug"?"Generate" : blockData.type==="files" ? "Select" : ""}
     <Flex>
         <!-- display block label -->
@@ -48,8 +61,8 @@
             <Label text={blockData.id} margin="0 0 0 0" rounded btn={{ href:`/admin/routes/${blockData.link?.toRoute}/objects/create`,text:`Create ${blockData.link?.toRoute}`,newTab:true}}/>
         {:else if blockData.type==="files"}
             <Label text={blockData.id} margin="0 0 0 0" rounded btn={btnText} on:click={()=>isFileSelectorOpen=true}/>
-        {:else if blockData.type==="keyObjectList"}
-            <Label text={blockData.id} margin="0 0 0 0" rounded btn={addingKeyObject?"Closed":"Add key object"} on:click={()=>addingKeyObject=!addingKeyObject}/>
+        {:else if ["objectList","keyObjectList"].includes(blockData.type)}
+            <Label text={blockData.id} margin="0 0 0 0" rounded btn={addingKeyObject?"Closed":"Add key"} on:click={()=>addingKeyObject=!addingKeyObject}/>
         {:else}
             <Label text={blockData.id} margin="0 0 0 0" rounded btn={btnText} on:click={()=>dispatch("genSlug",blockData)}/>
         {/if}
@@ -78,6 +91,9 @@
             <SelectRouteObjects oneToMany={false} bind:value {blockData}/>
         {:else if blockData.type==="keyObjectList"}
             <KeyObjectList bind:value bind:addingKeyObject/>
+        {:else if blockData.type==="objectList"}
+            {#if addingKeyObject}<NewObjectListItem {blockData} on:addObject={addObjectListItem}/>{/if}
+            {#if value.length>0}<ObjectListItems {blockData} bind:value on:remove={rmObjectListItem}/>{/if}
         {/if}
     </Flex>
 {/if}

@@ -18,14 +18,22 @@ export default new class Utils {
             // add to fetch class
             fetcherClass+=this.fetchMethodTemplate(route.id,route.singularID,this.capitalize(route.id)+"Data")
             // start current route type data
-            let typeData:string = `type ${this.capitalize(route.id)+"Data"} = {`
+            let typeData:string = `export type ${this.capitalize(route.id)+"Data"} = {`
             // loop all blocks in current route
             for(const block of route.blocks){
                 // string
                 if(["input","slug","text"].includes(block.type)) typeData+=`\n    ${block.id}:string`
                 // number
                 else if(block.type==="number") typeData+=`\n    ${block.id}:number`
-                // number
+                // string list
+                else if(block.type==="stringList") typeData+=`\n    ${block.id}:string[]`
+                // key object list
+                else if(block.type==="keyObjectList") typeData+=`\n    ${block.id}:{key:string,value:string}[]`
+                // key object list
+                else if(block.type==="objectList"){
+                    typeData+=`\n    ${block.id}:{ ${Object.entries(block.objectKeys!).map(data=>`${data[0]}:${data[1]}`).join(",")} }[]`
+                }
+                // date
                 else if(block.type==="date") typeData+=`\n    ${block.id}:Date`
                 // boolean
                 else if(block.type==="boolean") typeData+=`\n    ${block.id}:boolean`
@@ -45,7 +53,10 @@ export default new class Utils {
         }
         // close class tag
         fetcherClass+="\n}"
-        const fileData = `import db from "svelteCMS/lib/db.server";\n\ntype Config<TYPE> = { limit?:number,skip?:number,sort?:{ key: (keyof TYPE), direction:"desc"|"asc" } }\n\ntype Filter<Data> = {[key in keyof Data]:any}|{}\n\n${types.join("\n")}\n\n${fetcherClass}`
+        // save generated types
+        writeFileSync(`src/svelteCMS/types/generated.ts`,types.join("\n"))
+
+        const fileData = `import type * as GeneratedTypes from "svelteCMS/types/generated";\nimport db from "svelteCMS/lib/db.server";\n\ntype Config<TYPE> = { limit?:number,skip?:number,sort?:{ key: (keyof TYPE), direction:"desc"|"asc" } }\n\ntype Filter<Data> = {[key in keyof Data]:any}|{}\n\n${fetcherClass}`
         writeFileSync(`src/svelteCMS/lib/fetcher.server.ts`,fileData)
     }
 
@@ -53,14 +64,14 @@ export default new class Utils {
     private capitalize = (data:string)=> data.charAt(0).toUpperCase()+data.slice(1)
 
     /** template for fetcher methods */
-    private fetchMethodTemplate = (routeID:string,singularID:string,typeName:string)=>`\n    async ${singularID}<K extends keyof ${typeName}>(filter:Filter<${typeName}>,select:{[P in K]:true|{[key:string]:any}}){
+    private fetchMethodTemplate = (routeID:string,singularID:string,typeName:string)=>`\n    async ${singularID}<K extends keyof GeneratedTypes.${typeName}>(filter:Filter<GeneratedTypes.${typeName}>,select:{[P in K]:true|{[key:string]:any}}){
             const object = await db.collection("${routeID}").findOne(filter,{ projection:select }) as any ;
             if(object) object['_id']=object['_id'].toString()
-            const response = object as Pick<${typeName}, K> & { _id:string }
+            const response = object as Pick<GeneratedTypes.${typeName}, K> & { _id:string }
             return response
         }
-        async ${routeID}<K extends keyof ${typeName}>(filter:Filter<${typeName}>,select:{[P in K]:true|{[key:string]:any}},config?:Config<${typeName}>){
-            type Response = Pick<${typeName}, K> & { _id:string }
+        async ${routeID}<K extends keyof GeneratedTypes.${typeName}>(filter:Filter<GeneratedTypes.${typeName}>,select:{[P in K]:true|{[key:string]:any}},config?:Config<GeneratedTypes.${typeName}>){
+            type Response = Pick<GeneratedTypes.${typeName}, K> & { _id:string }
             const cursor = db.collection("${routeID}").find(filter,{ projection:select }).map(((data:any)=>{ data['_id']=data['_id'].toString() ; return data}))
             if(config?.skip) cursor.skip(config.skip)
             if(config?.sort) cursor.sort(config.sort.key,config.sort.direction)

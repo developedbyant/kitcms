@@ -1,4 +1,5 @@
 <script lang="ts">
+    export let editAble:boolean
     export let data:{key:string,value:string}
     import { createEventDispatcher } from "svelte";
     import KeyIcon from "svelteCMS/icons/KeyFile.svelte"
@@ -11,7 +12,11 @@
     <span class="title">
         <KeyIcon />{data.key}
     </span>
-    <input class="value" type="text" bind:value={data.value} placeholder="value...">
+    {#if editAble}
+        <input class="value" type="text" bind:value={data.value} placeholder="value...">
+    {:else}
+        <span class="value">{data.value}</span>
+    {/if}
     <button class="btn" on:click={()=>showConfirm=!showConfirm}>Remove</button>
     <Confirm bind:show={showConfirm} on:confirm={e=>{ if(e.detail) dispatch("remove",data)}}/>
 </div>

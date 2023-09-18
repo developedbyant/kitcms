@@ -1,16 +1,20 @@
 <script lang="ts">
+    export let allowRm:boolean = true
+    export let editAble:boolean = true
     export let addingKeyObject:boolean = false
     export let value:{key:string,value:string}[]
+    import { createEventDispatcher } from "svelte";
     import utils from "svelteCMS/lib/utils";
     import { createToast } from "svelteCMS/components/toasts/store";
     import KeyObject from "./KeyObject.svelte";
     import NewKeyObject from "./NewKeyObject.svelte";
+    const dispatch = createEventDispatcher()
 
     /** remove item from list */
     function removeItem(e:any){
         const itemData:{key:string,value:string} = e.detail
-        const newValue = value.filter(data=>data.value!==itemData.value&&data.key!==itemData.key)
-        value = [...newValue]
+        if(allowRm) value = [...value.filter(data=>data.value!==itemData.value&&data.key!==itemData.key)]
+        dispatch("remove",itemData)
     }
 
     /** handle new key object added */
@@ -39,7 +43,7 @@
 {#if value.length>0}
     <div class="keyObjects">
         {#each value as data }
-            <KeyObject bind:data on:remove={removeItem}/>
+            <KeyObject {editAble} bind:data on:remove={removeItem}/>
         {/each}
     </div>
 {/if}
