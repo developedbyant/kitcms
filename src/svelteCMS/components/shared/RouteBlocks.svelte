@@ -13,28 +13,30 @@
     import Input from "svelteCMS/components/input/Input.svelte";
     import ChipSelector from "svelteCMS/components/chipsSelector/ChipSelector.svelte";
     import RouteBlock from "./RouteBlock.svelte";
+    import KeyObjectList from "../keyObjectList/KeyObjectList.svelte";
     // icons
     import PlusIcon from "svelteCMS/icons/Plus.svelte";
-    import type { RouteBlockData } from "svelteCMS/types";
+    import CloudIcon from "svelteCMS/icons/Cloud.svelte";
     import ToggleSwitch from "./ToggleSwitch.svelte";
-    import KeyObjectList from "../keyObjectList/KeyObjectList.svelte";
+    import type { RouteBlockData } from "svelteCMS/types";
+    let editing:boolean = false
     let keyName:string = ""
     let selectedType = blockTypes[0]
     let routes = $page.data.svelteCMS.routes
     let routesStringList = routes.filter(data=>data.id!==routeID).map(data=>data.id)
     // only when linking route
-    $: isLinkedRoute = { yes:selectedType==="linkRoute",selectedRoute:"",selectedRouteKey:"",oneToMany:true }
-    $: isObjectList = { yes:selectedType==="objectList", key:"",type:"string",keys:{} } as { yes:boolean,key:string,type:"boolean"|"string"|"number",keys:{ [key:string]:"boolean"|"string"|"number"}}
+    let isLinkedRoute = { selectedRoute:"",selectedRouteKey:"",oneToMany:true }
+    let isObjectList = { key:"",type:"string",keys:{} } as { key:string,type:"boolean"|"string"|"number",keys:{ [key:string]:"boolean"|"string"|"number"}}
     $: selectedRouteKeys = routes.find(data=>data.id===isLinkedRoute.selectedRoute)?.blocks.map(data=>data.id)
-    $: disabled = (isObjectList.yes && Object.keys(isObjectList.keys).length===0) || (isLinkedRoute.yes && (!isLinkedRoute.selectedRoute || !isLinkedRoute.selectedRouteKey)) || keyName.trim()===""
+    $: disabled = (selectedType==="objectList" && Object.keys(isObjectList.keys).length===0) || (selectedType==="linkRoute" && (!isLinkedRoute.selectedRoute || !isLinkedRoute.selectedRouteKey)) || keyName.trim()===""
     /** add new block */
-    function addNewBlock(){
+    function addOrUpdate(){
         // make sure block name does not exist
-        if(blocks.find(data=>data.id===keyName)){ createToast({ type:"error",msg:`Block with id(name) '${keyName}' already exists`}); return }
+        if(blocks.find(data=>data.id===keyName) && !editing){ createToast({ type:"error",msg:`Block with id(name) '${keyName}' already exists`}); return }
         // add new block
         const newBlock:RouteBlockData = { id:keyName,type:selectedType}
         // check if linking to a route and make sure all keys needed are provided
-        if(isLinkedRoute.yes){
+        if(selectedType==="linkRoute"){
             if(!isLinkedRoute.selectedRoute || !isLinkedRoute.selectedRouteKey || !keyName){ createToast({ type:"error",msg:`Make sure you select the route you want to link to and the key`}) ; return }
             // add extra data to block
             newBlock["link"] = {
@@ -46,19 +48,22 @@
             }
         }
         // check if it's a object list and make there is at least one key in object
-        if(isObjectList.yes){
+        if(selectedType==="objectList"){
             if(Object.keys(isObjectList.keys).length===0){ createToast({ type:"error",msg:`Object list require at least one key`}) ; return }
             // add extra data to block
             newBlock["objectKeys"] = isObjectList.keys
             // reset all
             isObjectList.keys = {}
         }
-
-        // @ts-ignore block
-        blocks = [...blocks,newBlock]
-        createToast({ type:"successful",msg:`Block with '${keyName}' was added`})
-        keyName = ""
-        selectedType = blockTypes[0]
+        // update
+        if(editing){
+            const newBlocksData = blocks.map(data=>data.id===newBlock.id ? newBlock : data)
+            blocks = [...newBlocksData]
+        }
+        // add new block
+        else blocks = [...blocks,newBlock]
+        // reset states
+        resetAll()
     }
 
     /** Swap route block position */
@@ -90,28 +95,54 @@
         isObjectList.keys = {...isObjectList.keys}
     }
 
+    /** edit block */
+    function editBlock(e:any){
+        const blockData = e.detail as RouteBlockData
+        modalIsOpen = true
+        editing = true
+        selectedType = blockData.type
+        keyName = blockData.id
+        if(blockData.link){
+            isLinkedRoute = {
+                oneToMany:blockData.link.oneToMany,
+                selectedRoute:blockData.link.toRoute,
+                selectedRouteKey:blockData.link.toKey
+            }
+        }
+        // @ts-ignore
+        if(blockData.objectKeys) isObjectList.keys = blockData.objectKeys
+    }
+
     /** Run add new block function when user click enter from input */
-    const onKeyUp = (e:KeyboardEvent)=>{ if(e.code==="Enter") addNewBlock() }
+    const onKeyUp = (e:KeyboardEvent)=>{ if(e.code==="Enter") addOrUpdate() }
+
+    /** reset all states when close */
+    const resetAll = ()=>{
+        editing = false
+        selectedType="input"
+        keyName=""
+        isObjectList.keys = {}
+    }
 </script>
 
-<Modal bind:open={modalIsOpen}>
+<Modal bind:open={modalIsOpen} on:closed={resetAll}>
     <div class="modalContent">
         <Label text="Adding block" margin="0 0 5px 0"/>
         <Input on:keyup={onKeyUp} bind:value={keyName} type="input" placeholder="Block name..."/>
         <ChipSelector bind:selected={selectedType} values={blockTypes}/>
-        {#if isObjectList.yes}
-            <Label text="Describe object keys" margin="10px 0 5px 0" btn="Add"/>
-            {#if Object.keys(isObjectList.keys).length>0}
-                <KeyObjectList editAble={false} allowRm={false} on:remove={rmKeyObject} value={Object.entries(isObjectList.keys).map(data=>{ return{ key:data[0],value:data[1]} })}/>
-            {/if}
+        {#if selectedType==="objectList"}
+            <Label text="Describe object keys" margin="10px 0 5px 0"/>
             <div class="flex">
                 <Input bind:value={isObjectList.key} type="input" placeholder="key name..."/>
                 <ChipSelector bind:selected={isObjectList.type} values={["string","number","boolean"]} />
                 <Button disabled={isObjectList.key.trim()===""} text="Add key" rounded on:click={addKeyObject}/>
             </div>
+            {#if Object.keys(isObjectList.keys).length>0}
+                <KeyObjectList editAble={false} allowRm={false} on:remove={rmKeyObject} value={Object.entries(isObjectList.keys).map(data=>{ return{ key:data[0],value:data[1]} })}/>
+            {/if}
         {/if}
         <!-- when linking route -->
-        {#if isLinkedRoute.yes}
+        {#if selectedType==="linkRoute"}
             <Label text="Is a one to many relation ?" margin="10px 0 5px 0">
                 <ToggleSwitch bind:checked={isLinkedRoute.oneToMany}/>
             </Label>
@@ -122,7 +153,7 @@
                 <ChipSelector bind:selected={isLinkedRoute.selectedRouteKey} values={selectedRouteKeys?selectedRouteKeys:[]}/>
             {/if}
         {/if}
-        <Button {disabled} text="Add" icon={PlusIcon} on:click={addNewBlock}/>
+        <Button {disabled} text={editing?"Update":"Add"} icon={editing?CloudIcon:PlusIcon} on:click={addOrUpdate}/>
     </div>
 </Modal>
 
@@ -131,7 +162,7 @@
 {:else}
     <div class="blocks">
         {#each blocks as block }
-            <RouteBlock {block} on:delete={removeBlock} on:change={handleBlockSwap}/>
+            <RouteBlock {block} on:delete={removeBlock} on:change={handleBlockSwap} on:edit={editBlock}/>
         {/each}
     </div>
 {/if}

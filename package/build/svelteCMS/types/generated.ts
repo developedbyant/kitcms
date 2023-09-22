@@ -1,14 +1,17 @@
 export type TagsData = {
+    _id:any
     title:string
     slug:string
     altNames:string[]
 }
 export type CategoriesData = {
+    _id:any
     title:string
     slug:string
     image:import("svelteCMS/types").AssetData
 }
 export type ProductsData = {
+    _id:any
     title:string
     slug:string
     tags:TagsData[]
@@ -16,6 +19,7 @@ export type ProductsData = {
     variants:{key:string,value:string}[]
 }
 export type TestsData = {
+    _id:any
     title:string
     slug:string
     overview:string
@@ -31,9 +35,11 @@ export type TestsData = {
     cartItems:{ name:string,price:number }[]
 }
 export type CartsData = {
+    _id:any
     totalPrice:number
     createdAt:Date
     updatedAt:Date
-    items:{ name:string,age:number }[]
+    items:{ name:string }[]
     products:{ title:string,price:number,active:boolean }[]
+    tags:TagsData[]
 }

@@ -18,7 +18,7 @@ export default new class Utils {
             // add to fetch class
             fetcherClass+=this.fetchMethodTemplate(route.id,route.singularID,this.capitalize(route.id)+"Data")
             // start current route type data
-            let typeData:string = `export type ${this.capitalize(route.id)+"Data"} = {`
+            let typeData:string = `export type ${this.capitalize(route.id)+"Data"} = {\n    _id:any`
             // loop all blocks in current route
             for(const block of route.blocks){
                 // string

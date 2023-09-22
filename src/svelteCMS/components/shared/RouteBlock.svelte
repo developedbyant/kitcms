@@ -8,6 +8,7 @@
     import DragIcon from "svelteCMS/icons/Drag.svelte";
     import TrashIcon from "svelteCMS/icons/Trash.svelte";
     import XIcon from "svelteCMS/icons/X.svelte";
+    import EditIcon from "svelteCMS/icons/VectorPen.svelte"
     import type { RouteBlockData } from "svelteCMS/types";
     const dispatch = createEventDispatcher()
     let showConfirm = false
@@ -15,9 +16,10 @@
 
 <SwapAble id={block.id} config={{ count:2,margin:"10px",grow:1}} on:change>
     <div class="block">
-        <div class="drag">
-            <DragIcon />
-        </div>
+        <div class="drag"><DragIcon /></div>
+        <button class="btn edit" data-label="Edit {block.id}" on:click={()=>dispatch("edit",block)}>
+            <EditIcon />
+        </button>
         <button class="remove" data-label="Remove {block.id}" on:click={()=>showConfirm=!showConfirm}>
             <Confirm show={showConfirm} position="tl" on:confirm={(e)=>{ if(e.detail) dispatch("delete",block)}}/>
             {#if showConfirm} <XIcon /> {:else} <TrashIcon /> {/if}
@@ -41,7 +43,7 @@
         border-radius: 5px;
         box-shadow: 1px 2px 2px var(--shadow);
     }
-    .drag,.remove{
+    .drag,.remove,.btn{
         cursor: grab;
         width: 30px; height: 30px;
         display: flex;
@@ -51,6 +53,13 @@
         background-color: var(--appBg);
         box-shadow: 1px 2px 3px var(--shadow);
         fill: var(--iconColor);
+    }
+    .btn.edit{
+        cursor: pointer;
+        border: none;
+        border-radius: 50%;
+        background-color: var(--buttonBg);
+        color: var(--buttonColor);
     }
     .remove{
         cursor: pointer;
