@@ -12,11 +12,17 @@ export default new class Utils {
     }
     /** generate route types and create fetch class */
     gen(routes:RouteData[]){
-        let fetcherClass:string = `export default class Fetcher {`
+        let updateClass:string = `export class Update {`
+        let findClass:string = `export class Find {`
+        let deleteClass:string = `export class Delete {`
+        let insertClass:string = `export class Insert {`
         const types:string[] = []
         for(const route of routes){
-            // add to fetch class
-            fetcherClass+=this.fetchMethodTemplate(route.id,route.singularID,this.capitalize(route.id)+"Data")
+            // add to classes
+            findClass+=this.findMethodTemplate(route.id,route.singularID,this.capitalize(route.id)+"Data")
+            updateClass+=this.updateMethodTemplate(route.id,route.singularID,this.capitalize(route.id)+"Data")
+            deleteClass+=this.deleteMethodTemplate(route.id,route.singularID,this.capitalize(route.id)+"Data")
+            insertClass+=this.insertMethodTemplate(route.id,route.singularID,this.capitalize(route.id)+"Data")
             // start current route type data
             let typeData:string = `export type ${this.capitalize(route.id)+"Data"} = {\n    _id:any`
             // loop all blocks in current route
@@ -51,27 +57,30 @@ export default new class Utils {
             // add route type
             types.push(typeData+"\n}")
         }
-        // close class tag
-        fetcherClass+="\n}"
+        // close classes tag
+        findClass+="\n}"
+        updateClass+="\n}"
+        deleteClass+="\n}"
+        insertClass+="\n}"
         // save generated types
         writeFileSync(`src/svelteCMS/types/generated.ts`,types.join("\n"))
 
-        const fileData = `import type * as GeneratedTypes from "svelteCMS/types/generated";\nimport db from "svelteCMS/lib/db.server";\n\ntype Config<TYPE> = { limit?:number,skip?:number,sort?:{ key: (keyof TYPE), direction:"desc"|"asc" } }\n\ntype Filter<Data> = {[key in keyof Data]:any}|{}\n\n${fetcherClass}`
-        writeFileSync(`src/svelteCMS/lib/fetcher.server.ts`,fileData)
+        const fileData = `import type * as GeneratedTypes from "svelteCMS/types/generated";\nimport db from "svelteCMS/lib/db.server";\n\ntype Config<TYPE> = { limit?:number,skip?:number,sort?:{ key: (keyof TYPE), direction:"desc"|"asc" } }\n\ntype Filter<Data> = {[key in keyof Data]:any}|{}\n\ntype SetData<TYPE> = { [K in keyof TYPE]?: TYPE[K] }\n\n${findClass}\n\n${updateClass}\n\n${deleteClass}\n\n${insertClass}`
+        writeFileSync(`src/svelteCMS/lib/database.server.ts`,fileData+`\nexport default { Find:new Find,Update:new Update,Delete:new Delete,Insert:new Insert }`)
     }
 
     /** Capitalize string */
     private capitalize = (data:string)=> data.charAt(0).toUpperCase()+data.slice(1)
 
     /** template for fetcher methods */
-    private fetchMethodTemplate = (routeID:string,singularID:string,typeName:string)=>`\n    async ${singularID}<K extends keyof GeneratedTypes.${typeName}>(filter:Filter<GeneratedTypes.${typeName}>,select:{[P in K]:true|{[key:string]:any}}){
+    private findMethodTemplate = (routeID:string,singularID:string,typeName:string)=>`\n    async ${singularID}<K extends keyof GeneratedTypes.${typeName}>(filter:Filter<GeneratedTypes.${typeName}>,select?:{[P in K]:true|{[key:string]:any}}){
             const object = await db.collection("${routeID}").findOne(filter,{ projection:select }) as any ;
             if(object) object['_id']=object['_id'].toString()
-            const response = object as Pick<GeneratedTypes.${typeName}, K> & { _id:string }
+            const response = object as typeof select extends undefined ? GeneratedTypes.${typeName} : Pick<GeneratedTypes.${typeName}, K> & { _id:string }
             return response
         }
-        async ${routeID}<K extends keyof GeneratedTypes.${typeName}>(filter:Filter<GeneratedTypes.${typeName}>,select:{[P in K]:true|{[key:string]:any}},config?:Config<GeneratedTypes.${typeName}>){
-            type Response = Pick<GeneratedTypes.${typeName}, K> & { _id:string }
+        async ${routeID}<K extends keyof GeneratedTypes.${typeName}>(filter:Filter<GeneratedTypes.${typeName}>,select?:{[P in K]:true|{[key:string]:any}},config?:Config<GeneratedTypes.${typeName}>){
+            type Response = typeof select extends undefined ? GeneratedTypes.${typeName} : Pick<GeneratedTypes.${typeName}, K> & { _id:string }
             const cursor = db.collection("${routeID}").find(filter,{ projection:select }).map(((data:any)=>{ data['_id']=data['_id'].toString() ; return data}))
             if(config?.skip) cursor.skip(config.skip)
             if(config?.sort) cursor.sort(config.sort.key,config.sort.direction)
@@ -79,4 +88,31 @@ export default new class Utils {
             const response = await cursor.toArray() as Response[]
             return response
         }`
+
+    /** template for setter methods */
+    private updateMethodTemplate(routeID:string,singularID:string,typeName:string){
+        return`\n    async ${singularID}(filter:Filter<GeneratedTypes.${typeName}>,dataToSet:SetData<GeneratedTypes.${typeName}>,){
+        return db.collection("${routeID}").updateOne(filter,{$set:dataToSet})
+    }\n    async ${routeID}(filter:Filter<GeneratedTypes.${typeName}>,dataToSet:SetData<GeneratedTypes.${typeName}>,){
+        return db.collection("${routeID}").updateMany(filter,{$set:dataToSet})
+    }`
+    }
+
+    /** template for delete methods */
+    private deleteMethodTemplate(routeID:string,singularID:string,typeName:string){
+        return`\n    async ${singularID}(filter:Filter<GeneratedTypes.${typeName}>){
+        return db.collection("${routeID}").deleteOne(filter)
+    }\n    async ${routeID}(filter:Filter<GeneratedTypes.${typeName}>){
+        return db.collection("${routeID}").deleteMany(filter)
+    }`
+    }
+
+    /** template for insert methods */
+    private insertMethodTemplate(routeID:string,singularID:string,typeName:string){
+        return`\n     async ${singularID}(data:Omit<GeneratedTypes.${typeName},"_id">){
+            return db.collection("${routeID}").insertOne(data)
+        }\n     async ${routeID}(data:Omit<GeneratedTypes.${typeName},"_id">[]){
+            return db.collection("${routeID}").insertMany(data)
+        }`
+    }
 }

@@ -144,14 +144,14 @@ if(folderDelConfirm && !updating){
 
 // update cms
 else if(folderDelConfirm && updating){
-    // make a copy of fetcher.server.ts if exists
-    const projectFetcherPath = `${paths.project}/svelteCMS/lib/fetcher.server.ts`
+    // make a copy of database.server.ts if exists
+    const projectFetcherPath = `${paths.project}/svelteCMS/lib/database.server.ts`
     const tempProjectFetcherPath = `${paths.project}/fetcher.ts`
     if(fs.existsSync(projectFetcherPath)) fs.copyFileSync(projectFetcherPath,tempProjectFetcherPath)
     // copy files
     fs.copySync(`${paths.build}/svelteCMS`,`${paths.project}/svelteCMS`)
     fs.copySync(`${paths.build}/admin`,`${paths.project}/routes/admin`)
-    // make a copy temp fetcher.server.ts to the correct path and delete temp file
+    // make a copy temp database.server.ts to the correct path and delete temp file
     if(fs.existsSync(tempProjectFetcherPath)){
         fs.copyFileSync(tempProjectFetcherPath,projectFetcherPath)
         fs.removeSync(tempProjectFetcherPath)

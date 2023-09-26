@@ -19,10 +19,12 @@
         // send api request
         const apiLoad:ApiObjectDelete['input'] = { objectData,routeID:data.routeData.id }
         const apiResponse:ApiObjectDelete['output'] = await utils.apiRequest("/admin/api/objects/delete",apiLoad)
+        // wait 500 milliseconds
+        await utils.wait(500)
         // show api response message
         createToast({ type:apiResponse.error?"error":"successful",msg:apiResponse.message })
-        // wait 2 seconds
-        await utils.wait(2000)
+        // wait 500 milliseconds
+        await utils.wait(1000)
         // if object was delete, remove it from current list
         if(!apiResponse.error){
             const newObjects = objects.filter(data=>data._id!==objectData._id)
