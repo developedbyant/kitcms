@@ -18,9 +18,11 @@
 </script>
 
 <div class="container" class:error class:rounded>
-    <div class="icon">
-        <svelte:component this={icon} />
-    </div>
+    {#if type!=="password" && icon}
+        <div class="icon">
+            <svelte:component this={icon} />
+        </div>
+    {/if}
     {#if type==="password"}
         <button on:click={showPassword}>
             {#if showPass}<EyeSlashIcon size=15/>{:else}<EyeIcon size=15/>{/if}
@@ -33,6 +35,7 @@
     .container{
         display: flex;
         align-items: center;
+        gap: 5px;
         background-color: var(--antiAppBg);
         padding: 5px 10px;
         border-radius: 3px;
@@ -62,6 +65,7 @@
         color: var(--errorColor);
     }
     button{
+        all: unset;
         cursor: pointer;
         display: flex;
         align-items: center;

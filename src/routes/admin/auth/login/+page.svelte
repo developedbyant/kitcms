@@ -33,7 +33,6 @@
     function inputValidator(){
         const cleanEmail = email.trim()
         const cleanPassword = password.trim()
-        console.log(cleanEmail,cleanPassword)
         if(cleanEmail==="") return{ error:true,message:"Please enter email"}
         else if(cleanPassword==="") return{ error:true,message:"Please enter password"}
         return {
